@@ -6,6 +6,10 @@ import os
 import pathlib
 import sys
 
+# 日付の入力欄を日本式（2026/10/29）で映す＝ブラウザを起動する前に言語を日本語へ（呼び出し側に頼らない）
+for _k in ("LANG", "LC_ALL"):
+    os.environ[_k] = "ja_JP.UTF-8"
+os.environ["LANGUAGE"] = "ja"
 sys.path.insert(0, os.path.expanduser("~/.claude/skills/client-demo-video/scripts"))
 import live_recorder as lr  # noqa: E402
 from live_recorder import Rec, record  # noqa: E402
