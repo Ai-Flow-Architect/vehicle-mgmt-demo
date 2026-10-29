@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>車両管理システム デモ</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f5f7fa; --card:#ffffff; --ink:#1f2933; --sub:#5b6775; --line:#dde3ea;
+  --brand:#1d6fd8; --brand-d:#1557ad; --brand-l:#e8f1fc;
+  --red:#d93025; --red-l:#fdecea; --orange:#c26a00; --orange-l:#fff4e0;
+  --green:#1e8e3e; --green-l:#e6f4ea; --gray-l:#eef1f4;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI","Meiryo",sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden}
+a{color:var(--brand)}
+button,input,select,textarea{font:inherit;color:inherit}
+.demo-bar{background:#fff8d6;border-bottom:1px solid #f0dc8a;font-size:13px;padding:6px 16px;text-align:center;color:#6b5600}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.hd{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:10px 16px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo .mk{width:30px;height:30px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:16px}
+nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+nav a{text-decoration:none;color:var(--sub);padding:8px 12px;border-radius:8px;font-weight:600;font-size:15px}
+nav a.on{background:var(--brand-l);color:var(--brand-d)}
+nav a:hover{background:var(--gray-l)}
+.who{font-size:13px;color:var(--sub);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.role{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:700}
+.role.admin{background:#ede7fb;color:#5b3cc4}.role.div{background:var(--brand-l);color:var(--brand-d)}.role.view{background:var(--gray-l);color:var(--sub)}
+@media(max-width:860px){
+  header{position:static}
+  .hd{gap:8px 12px}
+  .who{margin-left:auto}
+  nav{order:3;flex:0 0 100%;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  nav a{white-space:nowrap;flex:0 0 auto}
+}
+@media(max-width:480px){.who #whoName{display:none}}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:4px 0 16px}
+h2{font-size:18px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid{display:grid;gap:16px}.grid>*{min-width:0}
+.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
+@media(max-width:860px){.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+.kpi{padding:16px}
+.kpi .lb{font-size:13px;color:var(--sub);font-weight:600}
+.kpi .v{font-size:28px;font-weight:700;line-height:1.3}
+.kpi .s{font-size:13px;color:var(--sub)}
+.kpi.red{border-color:#f3b8b3;background:var(--red-l)}.kpi.red .v{color:var(--red)}
+.kpi.orange{border-color:#f2d199;background:var(--orange-l)}.kpi.orange .v{color:var(--orange)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--gray-l)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}.btn.pri:hover{background:var(--brand-d)}
+.btn.danger{color:var(--red);border-color:#f3b8b3}
+.btn.sm{min-height:36px;padding:0 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld label{font-size:14px;font-weight:600;color:var(--sub)}
+.fld .req{color:var(--red);font-size:12px;margin-left:4px}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],input[type=search],select,textarea{min-height:44px;border:1px solid #c9d2dc;border-radius:10px;padding:8px 12px;background:#fff;width:100%}
+textarea{min-height:80px}
+input:focus,select:focus,textarea:focus{outline:3px solid #bcd6f7;border-color:var(--brand)}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.form .full{grid-column:1/-1}
+@media(max-width:640px){.form{grid-template-columns:1fr}}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:#f8fafc;color:var(--sub);font-size:13px;font-weight:700}
+tr:last-child td{border-bottom:0}
+tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:#f6f9fd}
+td.num,th.num{text-align:right}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:700}
+.b-red{background:var(--red-l);color:var(--red)}.b-orange{background:var(--orange-l);color:var(--orange)}.b-green{background:var(--green-l);color:var(--green)}.b-gray{background:var(--gray-l);color:var(--sub)}
+.up{color:var(--red);font-weight:700}.down{color:var(--green);font-weight:700}
+.muted{color:var(--sub);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid #c9d2dc;border-radius:99px;padding:8px 14px;cursor:pointer;background:#fff;font-size:15px;user-select:none}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #c9d2dc;background:#fff;cursor:pointer;font-weight:600}
+.seg button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.bar-row{display:grid;grid-template-columns:110px 1fr 120px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.bars{display:flex;flex-direction:column;gap:3px}
+.bar{height:12px;border-radius:6px;min-width:2px}
+.bar.cur{background:var(--brand)}.bar.prev{background:#b8c4d1}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--sub);margin-bottom:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+@media(max-width:640px){.bar-row{grid-template-columns:80px 1fr 96px;font-size:13px}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f2933;color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.err{background:var(--red-l);color:var(--red);border:1px solid #f3b8b3;padding:10px 14px;border-radius:10px;font-weight:600;margin-bottom:12px}
+.info{background:var(--brand-l);color:var(--brand-d);padding:10px 14px;border-radius:10px;font-size:14px;margin-bottom:12px}
+.login-wrap{max-width:440px;margin:40px auto}
+.acct{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+.dl{display:grid;grid-template-columns:140px 1fr;gap:8px 12px;font-size:15px}
+.dl dt{color:var(--sub);font-weight:600}.dl dd{margin:0}
+@media(max-width:640px){.dl{grid-template-columns:110px 1fr}.hide-sm{display:none}.card{padding:14px}.kpi .v{font-size:20px!important}td.wrap-sm{white-space:normal}th,td{padding:10px 8px}}
+footer{max-width:1180px;margin:0 auto;padding:0 16px 40px;font-size:13px;color:var(--sub);display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.linkbtn{background:none;border:0;color:var(--brand);cursor:pointer;text-decoration:underline;padding:0}
+</style>
+</head>
+<body>
+<div class="demo-bar">これは操作を確かめていただくためのデモです。表示されている会社名・人名・車両はすべて架空です。入力した内容はこのブラウザの中にだけ保存されます。</div>
+<header id="hdr" hidden>
+  <div class="hd">
+    <div class="logo"><span class="mk">車</span>車両管理システム</div>
+    <nav id="nav"></nav>
+    <div class="who"><span id="whoName"></span><span id="whoRole" class="role"></span><button class="btn sm" id="logout">ログアウト</button></div>
+  </div>
+</header>
+<main id="app"></main>
+<footer id="ftr"><span id="todayLbl"></span><button class="linkbtn" id="resetData">デモのデータを最初の状態に戻す</button></footer>
+
+<script>
+"use strict";
+/* ===== 基本 ===== */
+const KEY = "vehicle_demo_v1";
+const qs = new URLSearchParams(location.search);
+const TODAY = (qs.get("today") && /^\d{4}-\d{2}-\d{2}$/.test(qs.get("today"))) ? qs.get("today") : ymd(new Date());
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function ymd(d){const z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());}
+function pd(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function addDays(s,n){const d=pd(s);d.setDate(d.getDate()+n);return ymd(d);}
+function addYears(s,n){const d=pd(s);const m=d.getMonth();d.setFullYear(d.getFullYear()+n);if(d.getMonth()!==m)d.setDate(0);return ymd(d);}
+function diffDays(a,b){return Math.round((pd(a)-pd(b))/86400000);}
+function yen(n){return Number(n||0).toLocaleString("ja-JP")+"円";}
+function jdate(s){if(!s)return "";const [y,m,d]=s.split("-");return `${y}/${m}/${d}`;}
+function fyOf(s){const d=pd(s);return d.getMonth()>=3?d.getFullYear():d.getFullYear()-1;}
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);}
+
+/* ===== 見本データ（架空・毎回同じ並びになるよう固定の乱数） ===== */
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const DIVS = ["第一営業部","第二営業部","工事部","設備部","物流部","製造部","サービス部","管理部"];
+const CLASSES = ["乗用車","軽自動車","バン","軽トラック","2tトラック","4tトラック","特殊車両"];
+const MODELS = {"乗用車":["プリウス","カローラ","アクア"],"軽自動車":["N-BOX","タント","ワゴンR"],"バン":["プロボックス","ハイエース バン","NV200"],"軽トラック":["キャリイ","ハイゼット トラック"],"2tトラック":["エルフ","ダイナ","キャンター"],"4tトラック":["フォワード","レンジャー"],"特殊車両":["高所作業車","ユニック車"]};
+const DIV_CLASSES = {"第一営業部":["乗用車","軽自動車","バン"],"第二営業部":["乗用車","軽自動車","バン"],"工事部":["バン","軽トラック","2tトラック","特殊車両"],"設備部":["バン","軽トラック","特殊車両"],"物流部":["2tトラック","4tトラック","バン"],"製造部":["軽トラック","2tトラック","バン"],"サービス部":["軽自動車","バン","軽トラック"],"管理部":["乗用車","軽自動車"]};
+const KINDS = ["修理","整備","車検","点検"];
+// 車検の有効期間（年）＝貨物の普通車（バン・2t/4t）と特殊車両は1年、乗用・軽自動車・軽トラックは2年（初回車検の特例はデモでは扱わない）
+function inspYears(cls){return /^(バン|2tトラック|4tトラック|特殊車両)$/.test(cls)?1:2;}
+const isHeavy = cls => /^(2tトラック|4tトラック|特殊車両)$/.test(cls);
+const DRIVERS = ["甲野","乙野","丙山","丁田","戊川","己原","庚谷","辛島","壬生","癸本"];
+
+function seedData(){
+  const r = rng(5349638), pick = a => a[Math.floor(r()*a.length)], between = (a,b) => Math.floor(a + r()*(b-a+1));
+  const vendors = ["みどり自動車整備","あおば自動車","ひかりモータース","中央タイヤセンター","さくら板金塗装","北町トラックサービス"].map((n,i)=>({id:i+1,name:n,tel:`000-0000-${String(1001+i)}`}));
+  const parts = ["エンジン","ブレーキ","タイヤ","バッテリー","オイル交換","エアコン","板金・塗装","電装品","足回り","ミッション","ワイパー・ライト類","その他"].map((n,i)=>({id:i+1,name:n}));
+  const users = [
+    {id:1,name:"甲野 太郎",email:"admin@example.com",role:"admin",div:""},
+    {id:2,name:"乙野 花子",email:"koji@example.com",role:"div",div:"工事部"},
+    {id:3,name:"丙山 一郎",email:"eigyo@example.com",role:"div",div:"第一営業部"},
+    {id:4,name:"丁田 二郎",email:"view@example.com",role:"view",div:""}
+  ];
+  const kana = "あいうえかきくけこさすせそたちつてとなにぬねのはひふほまみむめもやゆよらりるれろわ";
+  const vehicles = [];
+  let vid = 0;
+  DIVS.forEach((dv,di)=>{
+    const n = di<4 ? 13 : 12;
+    for(let i=0;i<n;i++){
+      const cls = pick(DIV_CLASSES[dv]);
+      const y = between(2014,2024), m = between(1,12);
+      const truck = isHeavy(cls);
+      vehicles.push({
+        id:++vid,
+        plate:`見本 ${truck?between(100,199):between(300,599)} ${kana[between(0,kana.length-1)]} ${between(10,99)}-${between(10,99)}`,
+        name:pick(MODELS[cls]), cls, div:dv,
+        first:`${y}-${String(m).padStart(2,"0")}`,
+        inspDue:addDays(TODAY,between(25,700)),
+        mileage:between(8000,180000),
+        status: r()<0.04 ? "休車" : "稼働",
+        driver:pick(DRIVERS), memo:""
+      });
+    }
+  });
+  // 期限切れ2台・30日以内6台・60日以内5台をはっきり作る
+  [3,41].forEach((id,i)=>vehicles[id].inspDue = addDays(TODAY,-(4+i*9)));
+  [7,15,22,58,77,90].forEach((id,i)=>vehicles[id].inspDue = addDays(TODAY,3+i*4));
+  [12,33,49,66,84].forEach((id,i)=>vehicles[id].inspDue = addDays(TODAY,35+i*5));
+
+  const repairs = [];
+  let rid = 0;
+  const start = `${fyOf(TODAY)-2}-04-01`;
+  const span = diffDays(TODAY,start);
+  const vendorFor = cls => isHeavy(cls) ? pick([6,1,2]) : pick([1,2,3,4,5]);
+  vehicles.forEach(v=>{
+    const truck = isHeavy(v.cls);
+    const cnt = between(2,7) + (truck?2:0);
+    for(let k=0;k<cnt;k++){
+      const date = addDays(start,between(0,span-1));
+      const roll = r();
+      const kind = roll<0.45 ? "修理" : roll<0.8 ? "整備" : "点検";
+      let ps, cost;
+      if(kind==="修理"){ps=[pick([1,2,7,8,9,10,6])];if(r()<0.3)ps.push(pick([3,4,11]));cost=between(15,truck?320:180)*1000;}
+      else if(kind==="整備"){ps=[pick([5,3,4,11])];cost=between(4,truck?60:35)*1000;}
+      else {ps=[12];cost=between(8,truck?30:18)*1000;}
+      // 今期は物流部と工事部が少し高く、管理部は下がる＝前期比較で差が見えるように
+      const fy = fyOf(date);
+      if(fy===fyOf(TODAY) && (v.div==="物流部"||v.div==="工事部")) cost = Math.round(cost*1.35/100)*100;
+      if(fy===fyOf(TODAY) && v.div==="管理部") cost = Math.round(cost*0.7/100)*100;
+      repairs.push({id:++rid,vid:v.id,date,kind,vendorId:vendorFor(v.cls),parts:[...new Set(ps)],cost,mileage:0,memo:"",by:"甲野 太郎"});
+    }
+    // 前回の車検（満了日から有効期間を戻した日・期間内なら）
+    const last = addYears(v.inspDue,-inspYears(v.cls));
+    if(last>=start && last<=TODAY) repairs.push({id:++rid,vid:v.id,date:addDays(last,-between(3,20)),kind:"車検",vendorId:vendorFor(v.cls),parts:[12],cost:between(truck?90:55,truck?190:110)*1000,mileage:0,memo:"",by:"甲野 太郎"});
+  });
+  repairs.sort((a,b)=>a.date<b.date?-1:1);
+  return {ver:2,seededFor:TODAY,users,vendors,parts,vehicles,repairs,seq:{v:vid,r:rid,vd:vendors.length,p:parts.length,u:users.length}};
+}
+
+let S;
+function load(){
+  try{
+    const j=JSON.parse(localStorage.getItem(KEY)||"null");
+    if(j&&j.ver===2){
+      // デモの日付は開いた日に合わせて前後へずらす（入力した記録も同じ日数だけずれる）
+      const d=diffDays(TODAY,j.seededFor);
+      if(d!==0){
+        j.vehicles.forEach(v=>{if(v.inspDue)v.inspDue=addDays(v.inspDue,d);});
+        j.repairs.forEach(r=>{r.date=addDays(r.date,d);if(r.prevDue)r.prevDue=addDays(r.prevDue,d);if(r.newDue)r.newDue=addDays(r.newDue,d);});
+        j.seededFor=TODAY;
+      }
+      return j;
+    }
+  }catch(e){}
+  return seedData();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+let ME = null;
+function loadMe(){try{const id=Number(sessionStorage.getItem(KEY+"_me"));return S.users.find(u=>u.id===id)||null;}catch(e){return null;}}
+function setMe(u){ME=u;try{u?sessionStorage.setItem(KEY+"_me",u.id):sessionStorage.removeItem(KEY+"_me");}catch(e){}}
+
+/* ===== 権限 ===== */
+const ROLE_LABEL = {admin:"管理者",div:"事業部の担当",view:"閲覧のみ"};
+const isAdmin = () => ME && ME.role==="admin";
+const canEditVehicle = v => ME && (ME.role==="admin" || (ME.role==="div" && v.div===ME.div));
+const canRegister = () => ME && ME.role!=="view";
+function myVehicles(){return ME && ME.role==="div" ? S.vehicles.filter(v=>v.div===ME.div) : S.vehicles;}
+function vById(id){return S.vehicles.find(v=>v.id===Number(id));}
+function vendorName(id){return (S.vendors.find(x=>x.id===id)||{}).name||"（削除済みの業者）";}
+function partNames(ids){return ids.map(i=>(S.parts.find(p=>p.id===i)||{}).name).filter(Boolean).join("・");}
+
+function inspState(v){
+  const d = diffDays(v.inspDue,TODAY);
+  if(v.status==="廃車") return {cls:"b-gray",txt:"廃車",d};
+  if(d<0) return {cls:"b-red",txt:`期限切れ（${-d}日超過）`,d};
+  if(d<=30) return {cls:"b-red",txt:`あと${d}日`,d};
+  if(d<=60) return {cls:"b-orange",txt:`あと${d}日`,d};
+  return {cls:"b-green",txt:`あと${d}日`,d};
+}
+
+/* ===== 画面の切り替え ===== */
+const ROUTES = [
+  ["#/home","ホーム",()=>true],["#/vehicles","車両台帳",()=>true],["#/repair/new","修理・整備の登録",canRegister],
+  ["#/report","費用の集計",()=>true],["#/master","業者・箇所の登録",isAdmin],["#/users","利用者と権限",isAdmin]
+];
+function go(h){if(location.hash===h)render();else location.hash=h;}
+function render(){
+  window.scrollTo(0,0);
+  const h = location.hash || "#/home";
+  if(!ME){$("#hdr").hidden=true;return viewLogin();}
+  $("#hdr").hidden=false;
+  $("#whoName").textContent = ME.name + (ME.div?`（${ME.div}）`:"");
+  const rl=$("#whoRole");rl.textContent=ROLE_LABEL[ME.role];rl.className="role "+ME.role;
+  $("#nav").innerHTML = ROUTES.filter(r=>r[2]()).map(r=>`<a href="${r[0]}" class="${h.startsWith(r[0].replace("/new",""))&&!(r[0]==="#/vehicles"&&h.startsWith("#/vehicle/"))?"on":""}">${r[1]}</a>`).join("");
+  let m;
+  if(h==="#/home") return viewHome();
+  if(h==="#/vehicles") return viewVehicles();
+  if(h==="#/vehicle/new") return canRegister()?viewVehicleForm(null):deny();
+  if((m=h.match(/^#\/vehicle\/(\d+)$/))) return viewVehicle(Number(m[1]));
+  if((m=h.match(/^#\/vehicle\/(\d+)\/edit$/))) {const v=vById(m[1]);return v&&canEditVehicle(v)?viewVehicleForm(v):deny();}
+  if(h.startsWith("#/repair/new")) return canRegister()?viewRepairForm(null,Number(new URLSearchParams(h.split("?")[1]||"").get("v"))||0):deny();
+  if((m=h.match(/^#\/repair\/(\d+)\/edit$/))) {const rp=S.repairs.find(x=>x.id===Number(m[1]));return rp&&canEditVehicle(vById(rp.vid))?viewRepairForm(rp):deny();}
+  if(h==="#/report") return viewReport();
+  if(h==="#/master") return isAdmin()?viewMaster():deny();
+  if(h==="#/users") return isAdmin()?viewUsers():deny();
+  go("#/home");
+}
+function deny(){$("#app").innerHTML=`<div class="card"><h2>この画面を開く権限がありません</h2><p class="muted">ご利用の権限（${ROLE_LABEL[ME.role]}）では表示できない画面です。必要な場合は管理者に権限の変更を依頼してください。</p><a class="btn" href="#/home">ホームへ戻る</a></div>`;}
+
+/* ===== ログイン ===== */
+function viewLogin(){
+  $("#app").innerHTML = `<div class="login-wrap"><div class="card">
+    <h1 style="text-align:center">車両管理システム</h1>
+    <div id="lerr"></div>
+    <div class="fld"><label for="lemail">メールアドレス</label><input id="lemail" type="email" autocomplete="username"></div>
+    <div class="fld" style="margin-top:12px"><label for="lpw">パスワード</label><input id="lpw" type="password" autocomplete="current-password"></div>
+    <button class="btn pri" id="loginBtn" style="width:100%;margin-top:16px">ログイン</button>
+    </div>
+    <div class="card"><h2>デモ用の利用者</h2><p class="muted">権限ごとに見える画面とできる操作が変わります。パスワードはすべて <b>demo</b> です。</p>
+    ${S.users.map(u=>`<div class="acct"><div><b>${esc(u.name)}</b> <span class="role ${u.role}">${ROLE_LABEL[u.role]}</span><div class="muted">${esc(u.email)}${u.div?"・"+esc(u.div):""}</div></div><button class="btn sm" data-quick="${u.id}">この人で入る</button></div>`).join("")}
+    </div></div>`;
+  const doLogin=()=>{
+    const u=S.users.find(x=>x.email===$("#lemail").value.trim().toLowerCase());
+    if(!u||$("#lpw").value!=="demo"){$("#lerr").innerHTML=`<div class="err">メールアドレスかパスワードが違います</div>`;return;}
+    setMe(u);go("#/home");
+  };
+  $("#loginBtn").onclick=doLogin;
+  $("#lpw").onkeydown=e=>{if(e.key==="Enter")doLogin();};
+  $$("[data-quick]").forEach(b=>b.onclick=()=>{const u=S.users.find(x=>x.id===Number(b.dataset.quick));$("#lemail").value=u.email;$("#lpw").value="demo";doLogin();});
+}
+
+/* ===== ホーム ===== */
+function periodSum(vs,from,to){const ids=new Set(vs.map(v=>v.id));return S.repairs.filter(r=>ids.has(r.vid)&&r.date>=from&&r.date<=to).reduce((a,r)=>a+r.cost,0);}
+function viewHome(){
+  const vs = myVehicles().filter(v=>v.status!=="廃車");
+  const st = vs.map(v=>({v,s:inspState(v)}));
+  const over = st.filter(x=>x.s.d<0), in30 = st.filter(x=>x.s.d>=0&&x.s.d<=30), in60 = st.filter(x=>x.s.d>30&&x.s.d<=60);
+  const all = myVehicles(); // 費用は廃車にした車両の分も含める（集計画面と同じ数え方）
+  const fy=fyOf(TODAY), cur=periodSum(all,`${fy}-04-01`,TODAY), prev=periodSum(all,`${fy-1}-04-01`,addYears(TODAY,-1));
+  const rate = prev? Math.round((cur-prev)/prev*1000)/10 : null;
+  const soon = st.filter(x=>x.s.d<=60).sort((a,b)=>a.s.d-b.s.d);
+  const ids=new Set(all.map(v=>v.id));
+  const recent = S.repairs.filter(r=>ids.has(r.vid)).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id-a.id).slice(0,6);
+  $("#app").innerHTML = `
+  <h1>ホーム <span class="muted" style="font-weight:400">${ME.role==="div"?esc(ME.div)+"の車両":"全社の車両"}</span></h1>
+  <div class="grid g4">
+    <div class="card kpi"><div class="lb">管理している車両</div><div class="v" id="kpiCount">${vs.length}台</div><div class="s">稼働 ${vs.filter(v=>v.status==="稼働").length}台・休車 ${vs.filter(v=>v.status==="休車").length}台</div></div>
+    <div class="card kpi red"><div class="lb">車検の期限切れ</div><div class="v" id="kpiOver">${over.length}台</div><div class="s">すぐに対応が必要です</div></div>
+    <div class="card kpi orange"><div class="lb">30日以内に車検</div><div class="v" id="kpi30">${in30.length}台</div><div class="s">60日以内はさらに ${in60.length}台</div></div>
+    <div class="card kpi"><div class="lb">今年度の修理・整備費</div><div class="v" style="font-size:24px" id="kpiCost">${yen(cur)}</div><div class="s">前年の同じ時期より ${rate===null?"—（前年の記録なし）":`<span class="${rate>0?"up":rate<0?"down":""}">${rate>0?"+":""}${rate}%</span>`}</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>車検が近い車両（60日以内）</h2>
+      ${soon.length?`<div class="tbl-wrap"><table><thead><tr><th>車両</th><th>満了日</th><th>残り</th></tr></thead><tbody id="soonList">
+      ${soon.map(x=>`<tr class="clk" data-v="${x.v.id}"><td class="wrap-sm">${esc(x.v.plate)}<div class="muted">${esc(x.v.name)}・${esc(x.v.div)}</div></td><td class="wrap-sm">${jdate(x.v.inspDue)}</td><td class="wrap-sm"><span class="badge ${x.s.cls}">${x.s.txt}</span></td></tr>`).join("")}
+      </tbody></table></div>`:`<p class="muted">60日以内に車検を迎える車両はありません。</p>`}
+    </div>
+    <div class="card"><h2>最近の修理・整備</h2>
+      ${recent.length?`<div class="tbl-wrap"><table><thead><tr><th>車両・日付</th><th>内容</th><th class="num">費用</th></tr></thead><tbody>
+      ${recent.map(r=>{const v=vById(r.vid);return `<tr class="clk" data-v="${v.id}"><td class="wrap-sm">${esc(v.plate)}<div class="muted">${jdate(r.date)}</div></td><td class="wrap-sm">${esc(r.kind)}・${esc(partNames(r.parts))}</td><td class="num">${yen(r.cost)}</td></tr>`;}).join("")}
+      </tbody></table></div>`:`<p class="muted">まだ記録がありません。</p>`}
+      ${canRegister()?`<div style="margin-top:12px"><a class="btn pri" href="#/repair/new">＋ 修理・整備を登録する</a></div>`:""}
+    </div>
+  </div>`;
+  $$("tr[data-v]").forEach(tr=>tr.onclick=()=>go(`#/vehicle/${tr.dataset.v}`));
+}
+
+/* ===== 車両台帳 ===== */
+const F = {q:"",div:"",cls:"",st:"",insp:""};
+function viewVehicles(){
+  $("#app").innerHTML = `
+  <div class="row" style="justify-content:space-between;margin-bottom:12px"><h1 style="margin:0">車両台帳</h1>
+  <div class="row">${canRegister()?`<a class="btn pri" href="#/vehicle/new">＋ 車両を登録</a>`:""}<button class="btn" id="csvV">一覧をCSVで保存</button></div></div>
+  <div class="card"><div class="row">
+    <div class="fld" style="flex:2;min-width:200px"><label for="fq">ナンバー・車名・使用者で探す</label><input id="fq" type="search" placeholder="例）エルフ、12-34、甲野" value="${esc(F.q)}"></div>
+    ${ME.role==="div"?"":`<div class="fld" style="flex:1;min-width:140px"><label for="fdiv">事業部</label><select id="fdiv"><option value="">すべて</option>${DIVS.map(d=>`<option ${F.div===d?"selected":""}>${d}</option>`).join("")}</select></div>`}
+    <div class="fld" style="flex:1;min-width:140px"><label for="fcls">車両の区分</label><select id="fcls"><option value="">すべて</option>${CLASSES.map(c=>`<option ${F.cls===c?"selected":""}>${c}</option>`).join("")}</select></div>
+    <div class="fld" style="flex:1;min-width:120px"><label for="fst">状態</label><select id="fst"><option value="">すべて</option>${["稼働","休車","廃車"].map(c=>`<option ${F.st===c?"selected":""}>${c}</option>`).join("")}</select></div>
+    <div class="fld" style="flex:1;min-width:150px"><label for="finsp">車検</label><select id="finsp"><option value="">すべて</option><option value="over" ${F.insp==="over"?"selected":""}>期限切れ</option><option value="30" ${F.insp==="30"?"selected":""}>30日以内</option><option value="60" ${F.insp==="60"?"selected":""}>60日以内</option></select></div>
+    <button class="btn" id="fclear">条件をクリア</button>
+  </div></div>
+  <p class="muted" id="vCount"></p>
+  <div class="tbl-wrap"><table><thead><tr><th>ナンバー</th><th>車名</th><th>区分</th><th class="hide-sm">事業部</th><th class="hide-sm">使用者</th><th>車検満了日</th><th>車検</th><th class="hide-sm">状態</th></tr></thead><tbody id="vList"></tbody></table></div>`;
+  const draw=()=>{
+    const q=F.q.trim().toLowerCase();
+    const list=filtered(q);
+    $("#vCount").textContent=`${list.length}台を表示しています`;
+    $("#vList").innerHTML = list.length? list.map(v=>{const s=inspState(v);return `<tr class="clk" data-v="${v.id}"><td>${esc(v.plate)}</td><td>${esc(v.name)}</td><td>${esc(v.cls)}</td><td class="hide-sm">${esc(v.div)}</td><td class="hide-sm">${esc(v.driver)}</td><td>${jdate(v.inspDue)}</td><td><span class="badge ${s.cls}">${s.txt}</span></td><td class="hide-sm">${esc(v.status)}</td></tr>`;}).join("") : `<tr><td colspan="8" class="muted">条件に合う車両がありません。条件をゆるめてお試しください。</td></tr>`;
+    $$("#vList tr[data-v]").forEach(tr=>tr.onclick=()=>go(`#/vehicle/${tr.dataset.v}`));
+  };
+  const filtered=q=>myVehicles().filter(v=>
+    (!q||[v.plate,v.name,v.driver,v.plate.replace(/\s/g,"")].some(x=>x.toLowerCase().includes(q)))&&
+    (!F.div||v.div===F.div)&&(!F.cls||v.cls===F.cls)&&(!F.st||v.status===F.st)&&
+    (!F.insp||v.status!=="廃車"&&(()=>{const d=diffDays(v.inspDue,TODAY);return F.insp==="over"?d<0:d<=Number(F.insp)&&d>=0;})())
+  ).sort((a,b)=>a.inspDue<b.inspDue?-1:1);
+  $("#fq").oninput=e=>{F.q=e.target.value;draw();};
+  [["#fdiv","div"],["#fcls","cls"],["#fst","st"],["#finsp","insp"]].forEach(([s,k])=>{const el=$(s);if(el)el.onchange=e=>{F[k]=e.target.value;draw();};});
+  $("#fclear").onclick=()=>{Object.keys(F).forEach(k=>F[k]="");viewVehicles();};
+  $("#csvV").onclick=()=>csv("車両台帳.csv",[["ナンバー","車名","区分","事業部","使用者","初度登録","車検満了日","走行距離(km)","状態"],...filtered(F.q.trim().toLowerCase()).map(v=>[v.plate,v.name,v.cls,v.div,v.driver,v.first,v.inspDue,v.mileage,v.status])]);
+  draw();
+}
+
+function viewVehicle(id){
+  const v=vById(id);
+  if(!v||(ME.role==="div"&&v.div!==ME.div)) return deny();
+  const s=inspState(v), rs=S.repairs.filter(r=>r.vid===v.id).sort((a,b)=>a.date<b.date?1:-1);
+  const fy=fyOf(TODAY);
+  const cur=rs.filter(r=>fyOf(r.date)===fy).reduce((a,r)=>a+r.cost,0), prev=rs.filter(r=>fyOf(r.date)===fy-1).reduce((a,r)=>a+r.cost,0);
+  $("#app").innerHTML = `
+  <p><a href="#/vehicles">← 車両台帳へ戻る</a></p>
+  <div class="row" style="justify-content:space-between;margin-bottom:12px"><h1 style="margin:0" id="vTitle">${esc(v.plate)}　${esc(v.name)}</h1>
+  <div class="row">${canEditVehicle(v)?`<a class="btn pri" href="#/repair/new?v=${v.id}">＋ 修理・整備を登録</a><a class="btn" href="#/vehicle/${v.id}/edit">車両の情報を直す</a>`:""}</div></div>
+  <div class="grid g2">
+    <div class="card"><h2>車両の情報</h2><dl class="dl">
+      <dt>事業部</dt><dd>${esc(v.div)}</dd><dt>区分</dt><dd>${esc(v.cls)}</dd><dt>主な使用者</dt><dd>${esc(v.driver)}</dd>
+      <dt>初度登録</dt><dd>${v.first?esc(v.first.replace("-","年"))+"月":'<span class="muted">未入力</span>'}</dd><dt>走行距離</dt><dd>${v.mileage?Number(v.mileage).toLocaleString()+" km":'<span class="muted">未入力</span>'}</dd>
+      <dt>状態</dt><dd>${esc(v.status)}</dd><dt>メモ</dt><dd>${esc(v.memo)||'<span class="muted">なし</span>'}</dd></dl></div>
+    <div class="card"><h2>車検</h2><dl class="dl"><dt>満了日</dt><dd><b>${jdate(v.inspDue)}</b></dd><dt>残り</dt><dd><span class="badge ${s.cls}" id="vInsp">${s.txt}</span></dd></dl>
+      <h2 style="margin-top:18px">修理・整備の費用</h2><dl class="dl"><dt>今年度（今日まで）</dt><dd>${yen(cur)}</dd><dt>昨年度（1年分）</dt><dd>${yen(prev)}</dd><dt>記録の件数</dt><dd>${rs.length}件</dd></dl></div>
+  </div>
+  <div class="card"><h2>修理・整備の履歴</h2>
+  ${rs.length?`<div class="tbl-wrap"><table><thead><tr><th>日付</th><th>種別</th><th>修理箇所</th><th class="hide-sm">業者</th><th class="num">費用</th><th class="num hide-sm">走行距離</th><th class="hide-sm">メモ</th>${canEditVehicle(v)?"<th></th>":""}</tr></thead><tbody id="hist">
+  ${rs.map(r=>`<tr><td>${jdate(r.date)}</td><td>${esc(r.kind)}</td><td>${esc(partNames(r.parts))}</td><td class="hide-sm">${esc(vendorName(r.vendorId))}</td><td class="num">${yen(r.cost)}</td><td class="num hide-sm">${r.mileage?Number(r.mileage).toLocaleString()+" km":""}</td><td class="hide-sm">${esc(r.memo)}</td>${canEditVehicle(v)?`<td><a class="btn sm" href="#/repair/${r.id}/edit">直す</a></td>`:""}</tr>`).join("")}
+  </tbody></table></div>`:`<p class="muted">まだ記録がありません。</p>`}</div>`;
+}
+
+function viewVehicleForm(v){
+  const isNew=!v; v = v || {plate:"",name:"",cls:"",div:ME.role==="div"?ME.div:"",driver:"",first:"",inspDue:"",mileage:"",status:"稼働",memo:""};
+  $("#app").innerHTML = `
+  <p><a href="${isNew?"#/vehicles":`#/vehicle/${v.id}`}">← 戻る</a></p>
+  <h1>${isNew?"車両を登録する":"車両の情報を直す"}</h1>
+  <div class="card"><div id="ferr"></div><div class="form">
+    <div class="fld"><label for="vplate">ナンバー<span class="req">必須</span></label><input id="vplate" type="text" placeholder="例）見本 400 あ 12-34" value="${esc(v.plate)}"></div>
+    <div class="fld"><label for="vname">車名<span class="req">必須</span></label><input id="vname" type="text" placeholder="例）プロボックス" value="${esc(v.name)}"></div>
+    <div class="fld"><label for="vcls">車両の区分<span class="req">必須</span></label><select id="vcls"><option value="">選んでください</option>${CLASSES.map(c=>`<option ${v.cls===c?"selected":""}>${c}</option>`).join("")}</select></div>
+    <div class="fld"><label for="vdiv">事業部<span class="req">必須</span></label><select id="vdiv" ${ME.role==="div"?"disabled":""}><option value="">選んでください</option>${DIVS.map(d=>`<option ${v.div===d?"selected":""}>${d}</option>`).join("")}</select></div>
+    <div class="fld"><label for="vdue">車検満了日<span class="req">必須</span></label><input id="vdue" type="date" value="${esc(v.inspDue)}"></div>
+    <div class="fld"><label for="vfirst">初度登録（年月）</label><input id="vfirst" type="month" value="${esc(v.first)}"></div>
+    <div class="fld"><label for="vdriver">主な使用者</label><input id="vdriver" type="text" value="${esc(v.driver)}"></div>
+    <div class="fld"><label for="vmile">走行距離（km）</label><input id="vmile" type="number" min="0" inputmode="numeric" value="${esc(v.mileage)}"></div>
+    <div class="fld full"><label>状態</label><div class="seg" id="vst">${["稼働","休車","廃車"].map(x=>`<button type="button" class="${v.status===x?"on":""}" data-st="${x}">${x}</button>`).join("")}</div></div>
+    <div class="fld full"><label for="vmemo">メモ</label><textarea id="vmemo">${esc(v.memo)}</textarea></div>
+  </div>
+  <div class="row" style="margin-top:16px"><button class="btn pri" id="vsave">${isNew?"登録する":"保存する"}</button><a class="btn" href="${isNew?"#/vehicles":`#/vehicle/${v.id}`}">やめる</a></div></div>`;
+  let st=v.status;
+  $$("#vst button").forEach(b=>b.onclick=()=>{st=b.dataset.st;$$("#vst button").forEach(x=>x.classList.toggle("on",x===b));});
+  $("#vsave").onclick=()=>{
+    const d={plate:$("#vplate").value.trim().replace(/\s+/g," "),name:$("#vname").value.trim(),cls:$("#vcls").value,div:ME.role==="div"?ME.div:$("#vdiv").value,inspDue:$("#vdue").value,first:$("#vfirst").value,driver:$("#vdriver").value.trim(),mileage:Number($("#vmile").value||0),status:st,memo:$("#vmemo").value.trim()};
+    const errs=[];
+    if(!d.plate)errs.push("ナンバーを入力してください");
+    else if(S.vehicles.some(x=>x.plate.replace(/\s/g,"")===d.plate.replace(/\s/g,"")&&x.id!==v.id))errs.push("同じナンバーの車両がすでに登録されています");
+    if(!d.name)errs.push("車名を入力してください");
+    if(!d.cls)errs.push("車両の区分を選んでください");
+    if(!d.div)errs.push("事業部を選んでください");
+    if(!d.inspDue)errs.push("車検満了日を入力してください");
+    if(d.mileage<0)errs.push("走行距離は0以上で入力してください");
+    if(errs.length){$("#ferr").innerHTML=`<div class="err">${errs.map(esc).join("<br>")}</div>`;window.scrollTo(0,0);return;}
+    if(isNew){d.id=++S.seq.v;S.vehicles.push(d);}else Object.assign(v,d);
+    save();toast(isNew?"車両を登録しました":"保存しました");go(`#/vehicle/${isNew?d.id:v.id}`);
+  };
+}
+
+/* ===== 修理・整備の登録 ===== */
+// 満了日の1か月前から満了日までに受けた車検は今の満了日から数える。それ以外は受けた日から数えて前日まで
+function nextInspSuggestion(v,date){const y=inspYears(v.cls);if(v.inspDue&&date>=addDays(v.inspDue,-30)&&date<=v.inspDue)return addYears(v.inspDue,y);return addDays(addYears(date,y),-1);}
+function viewRepairForm(rp,presetVid){
+  const isNew=!rp; rp = rp || {vid:presetVid||0,date:TODAY,kind:"修理",vendorId:0,parts:[],cost:"",mileage:0,memo:""};
+  const vs=myVehicles().filter(v=>v.status!=="廃車"||v.id===rp.vid).sort((a,b)=>a.div===b.div?(a.plate<b.plate?-1:1):DIVS.indexOf(a.div)-DIVS.indexOf(b.div));
+  $("#app").innerHTML = `
+  <h1>${isNew?"修理・整備を登録する":"修理・整備の記録を直す"}</h1>
+  <div class="card"><div id="rerr"></div><div class="form">
+    <div class="fld full"><label for="rvq">車両<span class="req">必須</span></label>
+      <input id="rvq" type="search" placeholder="ナンバーや車名の一部で絞り込めます（例：12-34、エルフ）">
+      <select id="rv" style="margin-top:8px"><option value="">車両を選んでください</option>${optVehicles(vs,rp.vid,"")}</select></div>
+    <div class="fld"><label for="rdate">日付<span class="req">必須</span></label><input id="rdate" type="date" value="${esc(rp.date)}" max="${TODAY}"></div>
+    <div class="fld"><label for="rcost">費用（税込・円）<span class="req">必須</span></label><input id="rcost" type="number" min="0" step="1" inputmode="numeric" placeholder="例）45000" value="${esc(rp.cost)}"><span class="muted" id="rcostLbl"></span></div>
+    <div class="fld full"><label>種別<span class="req">必須</span></label><div class="seg" id="rkind">${KINDS.map(k=>`<button type="button" class="${rp.kind===k?"on":""}" data-k="${k}">${k}</button>`).join("")}</div></div>
+    <div class="fld full" id="nextInspBox" hidden><label for="rnext">次の車検満了日（自動で計算・直せます）</label><input id="rnext" type="date"><span class="muted" id="rnextNote"></span></div>
+    <div class="fld full" id="editInspNote" hidden><span class="info">車検満了日を変える時は、車両の画面の「車両の情報を直す」から変更してください。</span></div>
+    <div class="fld"><label for="rmile">その時の走行距離（km・任意）</label><input id="rmile" type="number" min="0" inputmode="numeric" value="${rp.mileage||""}"></div>
+    <div class="fld full"><label for="rvendor">修理・整備をした業者<span class="req">必須</span></label><select id="rvendor"><option value="">選んでください</option>${S.vendors.map(x=>`<option value="${x.id}" ${rp.vendorId===x.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select>
+      ${isAdmin()?`<span class="muted">一覧に無い業者は「業者・箇所の登録」から追加できます。</span>`:`<span class="muted">一覧に無い業者は管理者に追加を依頼してください。</span>`}</div>
+    <div class="fld full"><label>修理・整備した箇所<span class="req">1つ以上</span></label><div class="chips" id="rparts">${S.parts.map(p=>`<span class="chip ${rp.parts.includes(p.id)?"on":""}" data-p="${p.id}" role="checkbox" tabindex="0" aria-checked="${rp.parts.includes(p.id)}">${esc(p.name)}</span>`).join("")}</div></div>
+    <div class="fld full"><label for="rmemo">メモ（症状・作業の内容など）</label><textarea id="rmemo" placeholder="例）走行中にブレーキ音。前輪パッド交換。">${esc(rp.memo)}</textarea></div>
+  </div>
+  <div class="row" style="margin-top:16px"><button class="btn pri" id="rsave">${isNew?"登録する":"保存する"}</button>
+  ${isNew?"":`<button class="btn danger" id="rdel">この記録を削除する</button>`}<button class="btn" id="rcancel">やめる</button></div></div>`;
+  let kind=rp.kind, touched=false;
+  const origKind=rp.kind;
+  const parts=new Set(rp.parts);
+  const refreshNext=(force)=>{const v=vById($("#rv").value);const show=kind==="車検"&&v&&isNew;$("#nextInspBox").hidden=!show;$("#editInspNote").hidden=!(kind==="車検"&&!isNew);if(force)touched=false;if(show){if(!touched)$("#rnext").value=nextInspSuggestion(v,$("#rdate").value||TODAY);$("#rnextNote").textContent=`${v.cls}は${inspYears(v.cls)}年ごと。登録すると、この車両の車検満了日（今は${jdate(v.inspDue)}）がこの日付に更新されます。`;}};
+  const costLbl=()=>{const n=Number($("#rcost").value);$("#rcostLbl").textContent=$("#rcost").value!==""&&n>=0?yen(n):"";};
+  $("#rvq").oninput=e=>{const cur=$("#rv").value;$("#rv").innerHTML=`<option value="">車両を選んでください</option>`+optVehicles(vs,Number(cur),e.target.value.trim().toLowerCase());};
+  $("#rv").onchange=()=>refreshNext(true);$("#rdate").onchange=()=>refreshNext(false);$("#rnext").oninput=()=>{touched=true;};$("#rcost").oninput=costLbl;
+  $$("#rkind button").forEach(b=>b.onclick=()=>{kind=b.dataset.k;$$("#rkind button").forEach(x=>x.classList.toggle("on",x===b));refreshNext(true);});
+  $$("#rparts .chip").forEach(c=>{const t=()=>{const id=Number(c.dataset.p);parts.has(id)?parts.delete(id):parts.add(id);c.classList.toggle("on");c.setAttribute("aria-checked",parts.has(id));};c.onclick=t;c.onkeydown=e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();t();}};});
+  $("#rcancel").onclick=()=>history.length>1?history.back():go("#/home");
+  refreshNext();costLbl();
+  $("#rsave").onclick=()=>{
+    const v=vById($("#rv").value), date=$("#rdate").value, costS=$("#rcost").value, cost=Number(costS), vendorId=Number($("#rvendor").value);
+    const errs=[];
+    if(!v)errs.push("車両を選んでください");
+    else if(!canEditVehicle(v))errs.push("この車両に記録する権限がありません");
+    if(!date)errs.push("日付を入力してください");else if(date>TODAY)errs.push("未来の日付は登録できません");
+    if(costS===""||!Number.isFinite(cost)||cost<0||!Number.isInteger(cost))errs.push("費用は0以上の整数（円）で入力してください");
+    if(!vendorId)errs.push("業者を選んでください");
+    if(!parts.size)errs.push("修理・整備した箇所を1つ以上選んでください");
+    if(kind==="車検"&&isNew&&v&&!$("#rnext").value)errs.push("次の車検満了日を入力してください");
+    const mileS=$("#rmile").value, mile=Number(mileS||0);
+    if(mileS!==""&&(!Number.isInteger(mile)||mile<0))errs.push("走行距離は0以上の整数（km）で入力してください");
+    if(errs.length){$("#rerr").innerHTML=`<div class="err">${errs.map(esc).join("<br>")}</div>`;window.scrollTo(0,0);return;}
+    const d={vid:v.id,date,kind,vendorId,parts:[...parts].sort((a,b)=>a-b),cost,mileage:mile,memo:$("#rmemo").value.trim()};
+    if(mile>Number(v.mileage||0))v.mileage=mile;
+    let msg=isNew?"登録しました":"保存しました";
+    if(isNew){d.id=++S.seq.r;d.by=ME.name;if(kind==="車検"){d.prevDue=v.inspDue;d.newDue=$("#rnext").value;v.inspDue=d.newDue;msg="登録し、車検満了日を更新しました";}S.repairs.push(d);}
+    else{if(origKind==="車検"&&kind!=="車検"&&undoInsp(rp))msg="保存し、車検満了日を元に戻しました";Object.assign(rp,d);}
+    save();toast(msg);go(`#/vehicle/${v.id}`);
+  };
+  if(!isNew)$("#rdel").onclick=()=>{if(!confirm("この記録を削除します。よろしいですか？"))return;const back=rp.kind==="車検"&&undoInsp(rp);S.repairs=S.repairs.filter(x=>x.id!==rp.id);save();toast(back?"削除し、車検満了日を元に戻しました":"削除しました");go(`#/vehicle/${rp.vid}`);};
+}
+// 車検の記録を取り消した時、その記録で更新した満了日のままなら元の満了日へ戻す
+function undoInsp(rp){const v=vById(rp.vid);if(v&&rp.prevDue&&v.inspDue===rp.newDue){v.inspDue=rp.prevDue;return true;}return false;}
+function optVehicles(vs,sel,q){
+  let html="",cur="";
+  vs.filter(v=>!q||[v.plate,v.name,v.plate.replace(/\s/g,"")].some(x=>x.toLowerCase().includes(q))||v.id===sel).forEach(v=>{
+    if(v.div!==cur){if(cur)html+="</optgroup>";html+=`<optgroup label="${esc(v.div)}">`;cur=v.div;}
+    html+=`<option value="${v.id}" ${v.id===sel?"selected":""}>${esc(v.plate)}　${esc(v.name)}（${esc(v.cls)}）</option>`;
+  });
+  return html+(cur?"</optgroup>":"");
+}
+
+/* ===== 費用の集計（前期比較） ===== */
+const R = {fy:null,cmp:"same",by:"div"};
+function viewReport(){
+  const fyNow=fyOf(TODAY); if(R.fy===null)R.fy=fyNow;
+  const curFrom=`${R.fy}-04-01`, curTo=R.fy===fyNow?TODAY:`${R.fy+1}-03-31`;
+  const prevFrom=`${R.fy-1}-04-01`, prevTo=R.cmp==="same"?addYears(curTo,-1):`${R.fy}-03-31`;
+  const vs=myVehicles(), vmap=new Map(vs.map(v=>[v.id,v]));
+  const inR=(r,a,b)=>vmap.has(r.vid)&&r.date>=a&&r.date<=b;
+  const keyOf={div:r=>vmap.get(r.vid).div,cls:r=>vmap.get(r.vid).cls,kind:r=>r.kind,vendor:r=>vendorName(r.vendorId),part:r=>partNames([r.parts[0]])};
+  const order={div:DIVS,cls:CLASSES,kind:KINDS,vendor:S.vendors.map(x=>x.name),part:S.parts.map(p=>p.name)}[R.by];
+  const agg=new Map(order.map(k=>[k,{cur:0,prev:0,n:0}]));
+  S.repairs.forEach(r=>{const k=keyOf[R.by](r);if(!agg.has(k))agg.set(k,{cur:0,prev:0,n:0});const a=agg.get(k);if(inR(r,curFrom,curTo)){a.cur+=r.cost;a.n++;}if(inR(r,prevFrom,prevTo))a.prev+=r.cost;});
+  const rows=[...agg.entries()].filter(([k,a])=>a.cur||a.prev);
+  const tot=rows.reduce((t,[,a])=>({cur:t.cur+a.cur,prev:t.prev+a.prev,n:t.n+a.n}),{cur:0,prev:0,n:0});
+  const max=Math.max(1,...rows.map(([,a])=>Math.max(a.cur,a.prev)));
+  const pct=(c,p)=>p?Math.round((c-p)/p*1000)/10:null;
+  const diffCell=(c,p)=>{const d=c-p,x=pct(c,p);return `<td class="num hide-sm ${d>0?"up":d<0?"down":""}">${d>0?"+":""}${d.toLocaleString()}円</td><td class="num ${d>0?"up":d<0?"down":""}">${x===null?"—":(x>0?"+":"")+x+"%"}</td>`;};
+  const byLabel={div:"事業部",cls:"車両の区分",kind:"種別",vendor:"業者",part:"修理箇所（主な箇所）"};
+  const L=R.fy===fyNow?"今期":`${R.fy}年度`;
+  const top=[...vs].map(v=>({v,c:S.repairs.filter(r=>r.vid===v.id&&inR(r,curFrom,curTo)).reduce((a,r)=>a+r.cost,0)})).filter(x=>x.c).sort((a,b)=>b.c-a.c).slice(0,10);
+  $("#app").innerHTML = `
+  <h1>修理・整備費用の集計</h1>
+  <div class="card"><div class="row">
+    <div class="fld"><label for="rfy">年度（4月〜翌3月）</label><select id="rfy">${[fyNow,fyNow-1,fyNow-2].map(y=>`<option value="${y}" ${R.fy===y?"selected":""}>${y}年度</option>`).join("")}</select></div>
+    <div class="fld"><label>比べる相手</label><div class="seg" id="rcmp"><button type="button" data-c="same" class="${R.cmp==="same"?"on":""}">前年の同じ時期</button><button type="button" data-c="full" class="${R.cmp==="full"?"on":""}">前年度の1年分</button></div></div>
+    <div class="fld"><label for="rby">分け方</label><select id="rby">${Object.entries(byLabel).map(([k,l])=>`<option value="${k}" ${R.by===k?"selected":""}>${l}ごと</option>`).join("")}</select></div>
+    <button class="btn" id="csvR">この表をCSVで保存</button>
+  </div>
+  <p class="info" style="margin:14px 0 0" id="periodLbl">${L}：${jdate(curFrom)}〜${jdate(curTo)}　／　比較：${jdate(prevFrom)}〜${jdate(prevTo)}${ME.role==="div"?`　／　${esc(ME.div)}の車両のみ`:""}</p></div>
+  <div class="grid g4">
+    <div class="card kpi"><div class="lb">${L}の費用</div><div class="v" style="font-size:24px" id="totCur">${yen(tot.cur)}</div><div class="s">${tot.n}件</div></div>
+    <div class="card kpi"><div class="lb">比較の期間</div><div class="v" style="font-size:24px">${yen(tot.prev)}</div><div class="s">${R.cmp==="same"?"前年の同じ時期":"前年度の1年分"}</div></div>
+    <div class="card kpi"><div class="lb">増減</div><div class="v ${tot.cur-tot.prev>0?"up":"down"}" style="font-size:24px" id="totDiff">${tot.cur-tot.prev>0?"+":""}${(tot.cur-tot.prev).toLocaleString()}円</div><div class="s">${pct(tot.cur,tot.prev)===null?"—":(pct(tot.cur,tot.prev)>0?"+":"")+pct(tot.cur,tot.prev)+"%"}</div></div>
+    <div class="card kpi"><div class="lb">1台あたり（${L}）</div><div class="v" style="font-size:24px">${yen(Math.round(tot.cur/Math.max(1,vs.filter(v=>v.status!=="廃車").length)))}</div><div class="s">今の稼働・休車の台数（廃車を除く）で割った額</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>${byLabel[R.by]}ごとのグラフ</h2><div class="legend"><span><i style="background:var(--brand)"></i>${L}</span><span><i style="background:#b8c4d1"></i>比較の期間</span></div>
+      ${rows.map(([k,a])=>`<div class="bar-row"><div>${esc(k)}</div><div class="bars"><div class="bar cur" style="width:${a.cur/max*100}%"></div><div class="bar prev" style="width:${a.prev/max*100}%"></div></div><div class="num" style="text-align:right">${Math.round(a.cur/1000).toLocaleString()}千円</div></div>`).join("")}
+    </div>
+    <div class="card"><h2>${byLabel[R.by]}ごとの表</h2><div class="tbl-wrap"><table><thead><tr><th>${byLabel[R.by]}</th><th class="num">${L}</th><th class="num hide-sm">比較</th><th class="num hide-sm">増減</th><th class="num">増減率</th></tr></thead><tbody id="rTbl">
+      ${rows.map(([k,a])=>`<tr><td>${esc(k)}</td><td class="num">${a.cur.toLocaleString()}円</td><td class="num hide-sm">${a.prev.toLocaleString()}円</td>${diffCell(a.cur,a.prev)}</tr>`).join("")}
+      <tr style="font-weight:700;background:#f8fafc"><td>合計</td><td class="num">${tot.cur.toLocaleString()}円</td><td class="num hide-sm">${tot.prev.toLocaleString()}円</td>${diffCell(tot.cur,tot.prev)}</tr></tbody></table></div></div>
+  </div>
+  <div class="card"><h2>${L}、費用が多い車両（上位10台）</h2><div class="tbl-wrap"><table><thead><tr><th>順位</th><th>ナンバー</th><th class="hide-sm">車名</th><th class="hide-sm">事業部</th><th class="num">費用</th></tr></thead><tbody>
+  ${top.map((x,i)=>`<tr class="clk" data-v="${x.v.id}"><td>${i+1}</td><td>${esc(x.v.plate)}</td><td class="hide-sm">${esc(x.v.name)}</td><td class="hide-sm">${esc(x.v.div)}</td><td class="num">${yen(x.c)}</td></tr>`).join("")}
+  </tbody></table></div><p class="muted">費用が多い車両は、買い替えやリースへの切り替えを検討する目安になります。</p></div>`;
+  $("#rfy").onchange=e=>{R.fy=Number(e.target.value);viewReport();};
+  $("#rby").onchange=e=>{R.by=e.target.value;viewReport();};
+  $$("#rcmp button").forEach(b=>b.onclick=()=>{R.cmp=b.dataset.c;viewReport();});
+  $$("tr[data-v]").forEach(tr=>tr.onclick=()=>go(`#/vehicle/${tr.dataset.v}`));
+  $("#csvR").onclick=()=>csv(`修理費用_${byLabel[R.by]}ごと_${R.fy}年度.csv`,[[byLabel[R.by],`${L}(円)`,"比較(円)","増減(円)","増減率(%)"],...rows.map(([k,a])=>[k,a.cur,a.prev,a.cur-a.prev,pct(a.cur,a.prev)??""]),["合計",tot.cur,tot.prev,tot.cur-tot.prev,pct(tot.cur,tot.prev)??""]]);
+}
+
+/* ===== マスタ（管理者） ===== */
+function viewMaster(){
+  const used=id=>S.repairs.filter(r=>r.vendorId===id).length, usedP=id=>S.repairs.filter(r=>r.parts.includes(id)).length;
+  $("#app").innerHTML = `<h1>業者・修理箇所の登録</h1>
+  <div class="grid g2">
+   <div class="card"><h2>修理・整備の業者</h2><div id="merr1"></div>
+    <div class="row"><div class="fld" style="flex:2"><label for="mvn">業者名</label><input id="mvn" type="text"></div><div class="fld" style="flex:1"><label for="mvt">電話</label><input id="mvt" type="text"></div><button class="btn pri" id="mvadd">追加</button></div>
+    <div class="tbl-wrap" style="margin-top:12px"><table><thead><tr><th>業者名</th><th>電話</th><th class="num">記録</th><th></th></tr></thead><tbody id="vendList">
+    ${S.vendors.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.tel)}</td><td class="num">${used(x.id)}件</td><td>${used(x.id)?'<span class="muted">使用中</span>':`<button class="btn sm danger" data-dv="${x.id}">削除</button>`}</td></tr>`).join("")}</tbody></table></div>
+    <p class="muted">記録で使われている業者は、過去の記録が崩れないよう削除できません。</p></div>
+   <div class="card"><h2>修理箇所</h2><div id="merr2"></div>
+    <div class="row"><div class="fld" style="flex:1"><label for="mpn">箇所の名前</label><input id="mpn" type="text"></div><button class="btn pri" id="mpadd">追加</button></div>
+    <div class="tbl-wrap" style="margin-top:12px"><table><thead><tr><th>箇所</th><th class="num">記録</th><th></th></tr></thead><tbody id="partList">
+    ${S.parts.map(p=>`<tr><td>${esc(p.name)}</td><td class="num">${usedP(p.id)}件</td><td>${usedP(p.id)?'<span class="muted">使用中</span>':`<button class="btn sm danger" data-dp="${p.id}">削除</button>`}</td></tr>`).join("")}</tbody></table></div></div>
+  </div>`;
+  $("#mvadd").onclick=()=>{const n=$("#mvn").value.trim();if(!n){$("#merr1").innerHTML=`<div class="err">業者名を入力してください</div>`;return;}if(S.vendors.some(x=>x.name===n)){$("#merr1").innerHTML=`<div class="err">同じ名前の業者がすでにあります</div>`;return;}S.vendors.push({id:++S.seq.vd,name:n,tel:$("#mvt").value.trim()});save();toast("業者を追加しました");viewMaster();};
+  $("#mpadd").onclick=()=>{const n=$("#mpn").value.trim();if(!n){$("#merr2").innerHTML=`<div class="err">箇所の名前を入力してください</div>`;return;}if(S.parts.some(x=>x.name===n)){$("#merr2").innerHTML=`<div class="err">同じ名前の箇所がすでにあります</div>`;return;}S.parts.push({id:++S.seq.p,name:n});save();toast("箇所を追加しました");viewMaster();};
+  $$("[data-dv]").forEach(b=>b.onclick=()=>{if(!confirm("この業者を削除します。よろしいですか？"))return;S.vendors=S.vendors.filter(x=>x.id!==Number(b.dataset.dv));save();viewMaster();});
+  $$("[data-dp]").forEach(b=>b.onclick=()=>{if(!confirm("この箇所を削除します。よろしいですか？"))return;S.parts=S.parts.filter(x=>x.id!==Number(b.dataset.dp));save();viewMaster();});
+}
+
+/* ===== 利用者と権限（管理者） ===== */
+function viewUsers(msg){
+  $("#app").innerHTML = `<h1>利用者と権限</h1>
+  <div class="card"><div class="info">管理者＝すべての車両と設定／事業部の担当＝自分の事業部の車両だけを見て登録／閲覧のみ＝全社を見るだけ（登録できない）</div>
+  <div id="uerr">${msg?`<div class="err">${esc(msg)}</div>`:""}</div>
+  <div class="tbl-wrap"><table><thead><tr><th>氏名</th><th class="hide-sm">メールアドレス</th><th>権限</th><th>事業部</th><th></th></tr></thead><tbody id="userList">
+  ${S.users.map(u=>`<tr><td>${esc(u.name)}</td><td class="hide-sm">${esc(u.email)}</td>
+    <td><select data-ur="${u.id}" ${u.id===ME.id?"disabled":""}>${Object.entries(ROLE_LABEL).map(([k,l])=>`<option value="${k}" ${u.role===k?"selected":""}>${l}</option>`).join("")}</select></td>
+    <td><select data-ud="${u.id}" ${u.role!=="div"?"disabled":""}>${u.role!=="div"?'<option value="">—</option>':""}${DIVS.map(d=>`<option ${u.div===d?"selected":""}>${d}</option>`).join("")}</select></td>
+    <td>${u.id===ME.id?'<span class="muted">自分</span>':`<button class="btn sm danger" data-udel="${u.id}">削除</button>`}</td></tr>`).join("")}
+  </tbody></table></div><p class="muted">自分自身の権限は変更・削除できません（管理者が誰もいなくなるのを防ぐため）。</p></div>
+  <div class="card"><h2>利用者を追加する</h2><div class="form">
+    <div class="fld"><label for="un">氏名<span class="req">必須</span></label><input id="un" type="text"></div>
+    <div class="fld"><label for="ue">メールアドレス<span class="req">必須</span></label><input id="ue" type="email"></div>
+    <div class="fld"><label for="urole">権限</label><select id="urole">${Object.entries(ROLE_LABEL).map(([k,l])=>`<option value="${k}" ${k==="div"?"selected":""}>${l}</option>`).join("")}</select></div>
+    <div class="fld"><label for="udiv">事業部（事業部の担当の時）</label><select id="udiv">${DIVS.map(d=>`<option>${d}</option>`).join("")}</select></div>
+  </div><div class="row" style="margin-top:14px"><button class="btn pri" id="uadd">追加する</button></div>
+  <p class="muted">本番では、追加した人へ初回のパスワード設定のご案内をメールで送ります（このデモではパスワードは全員 demo です）。</p></div>`;
+  $$("[data-ur]").forEach(s=>s.onchange=()=>{const u=S.users.find(x=>x.id===Number(s.dataset.ur));u.role=s.value;if(u.role==="div"&&!u.div)u.div=DIVS[0];if(u.role!=="div")u.div="";save();toast("権限を変更しました");viewUsers();});
+  $$("[data-ud]").forEach(s=>s.onchange=()=>{const u=S.users.find(x=>x.id===Number(s.dataset.ud));u.div=s.value;save();toast("事業部を変更しました");});
+  $$("[data-udel]").forEach(b=>b.onclick=()=>{const u=S.users.find(x=>x.id===Number(b.dataset.udel));if(!confirm(`${u.name} さんを削除します。よろしいですか？`))return;S.users=S.users.filter(x=>x.id!==u.id);save();toast("削除しました");viewUsers();});
+  $("#urole").onchange=()=>{$("#udiv").disabled=$("#urole").value!=="div";};
+  $("#uadd").onclick=()=>{
+    const name=$("#un").value.trim(), email=$("#ue").value.trim().toLowerCase(), role=$("#urole").value;
+    if(!name||!email)return viewUsers("氏名とメールアドレスを入力してください");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return viewUsers("メールアドレスの形が正しくありません");
+    if(S.users.some(x=>x.email===email))return viewUsers("同じメールアドレスの利用者がすでにいます");
+    S.users.push({id:++S.seq.u,name,email,role,div:role==="div"?$("#udiv").value:""});save();toast("利用者を追加しました");viewUsers();
+  };
+}
+
+/* ===== CSV ===== */
+function csv(name,rows){
+  const body="\uFEFF"+rows.map(r=>r.map(c=>{let s=String(c??"");if(typeof c!=="number"&&/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;}).join(",")).join("\r\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/csv"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+
+/* ===== 起動 ===== */
+S=load();ME=loadMe();
+$("#todayLbl").textContent=`今日の日付：${jdate(TODAY)}`;
+$("#logout").onclick=()=>{setMe(null);Object.keys(F).forEach(k=>F[k]="");Object.assign(R,{fy:null,cmp:"same",by:"div"});go("#/login");};
+$("#resetData").onclick=()=>{if(!confirm("入力した内容を消して、デモのデータを最初の状態に戻します。よろしいですか？"))return;try{localStorage.removeItem(KEY);}catch(e){}S=seedData();save();toast("最初の状態に戻しました");render();};
+window.addEventListener("hashchange",render);
+save();render();
+</script>
+</body>
+</html>
